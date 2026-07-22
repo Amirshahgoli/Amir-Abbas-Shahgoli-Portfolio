@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>پورتفولیوی شخصی | {{ profile.full_name if profile else 'مهندس صنایع' }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <!-- Canvas پس‌زمینه پویا -->
+    <canvas id="bgCanvas"></canvas>
+
+    <!-- Preloader -->
+    <div id="preloader">
+        <div class="loader-hex"></div>
+        <div class="loader-text">در حال بارگذاری پورتفولیو...</div>
+    </div>
+
+    <!-- دکمه سوئیچ تم -->
+    <button class="theme-toggle-btn" id="themeToggle" title="تغییر تم">🌙</button>
+
+    <!-- راهنمای کلیدهای میانبر کیبورد -->
+    <div class="keyboard-shortcuts-badge">
+        <span>میانبر:</span>
+        <span class="kbd-key">1</span> درباره من
+        <span class="kbd-key">2</span> مهارت‌ها
+        <span class="kbd-key">3</span> تحصیلات
+    </div>
+
+    <!-- هاله نوری دنباله‌رو موس -->
+    <div class="mouse-spotlight" id="spotlight"></div>
+
+    <!-- بخش مرکزی -->
+    <div class="main-container">
+        <span class="top-badge">پورتفوی دیجیتال</span>
+        <h1 class="hero-title">{{ profile.full_name if profile else 'فرناز احمدی' }}</h1>
+        <div style="display: flex; justify-content: center;">
+            <p class="hero-subtitle">
+                <span id="typewriter"></span>
+            </p>
+        </div>
+
+        <!-- دکمه‌های کپسولی -->
+        <div class="capsules-container">
+            <button class="capsule-btn" onclick="openModal('about-modal')">
+                درباره من
+            </button>
+            <button class="capsule-btn" onclick="openModal('grades-modal')">
+                تحصیلات
+            </button>
+            <button class="capsule-btn" onclick="openModal('skills-modal')">
+               مهارت‌ها
+            </button>
+        </div>
+    </div>
+
+    <!-- شش‌ضلعی‌های کناری (نامتقارن) -->
+    <div class="hexagon-btn hex-left" onclick="openModal('about-modal')">
+        <span class="hex-text">درباره من</span>
+    </div>
+
+    <div class="hexagon-btn hex-right" onclick="openModal('skills-modal')">
+        <span class="hex-text">مهارت‌ها</span>
+    </div>
+
+    <div class="hexagon-btn hex-bottom" onclick="openModal('grades-modal')">
+        <span class="hex-text">سوابق تحصیلی</span>
+    </div>
+
+   <!-- پاپ‌آوری ۱: درباره من (با کارت‌های لینک‌دار و تمیز) -->
+    <div class="modal-overlay" id="about-modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal('about-modal')">✕</button>
+            <div style="margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
+                <h2 style="font-size: 1.8rem;">درباره من</h2>
+                <p style="color: var(--text-muted); margin-top: 5px;">{{ profile.title if profile else '' }}</p>
+            </div>
+
+            <div class="grid-2">
+                <div>
+                    <h3 style="margin-bottom: 15px;">بیوگرافی</h3>
+                    <p style="line-height: 1.8; color: var(--text-muted); font-size: 0.95rem;">
+                        {{ profile.bio if profile else '' }}
+                    </p>
+                </div>
+
+                <div>
+                    <h3 style="margin-bottom: 15px;">اطلاعات کلی</h3>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <div class="info-card" data-tilt>
+                            <span style="color: var(--text-muted); font-size: 0.85rem;">نام کامل</span>
+                            <span style="font-weight: bold;">{{ profile.full_name if profile else '' }}</span>
+                        </div>
+                        <div class="info-card" data-tilt>
+                            <span style="color: var(--text-muted); font-size: 0.85rem;">رشته</span>
+                            <span style="font-weight: bold;">مهندسی صنایع</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="margin: 25px 0 15px 0;">راه‌های ارتباطی</h3>
+            <div class="grid-3">
+                <!-- ایمیل -->
+                <div class="info-card" data-tilt>
+                    <span style="color: var(--text-muted); font-size: 0.85rem;">ایمیل</span>
+                    {% if profile and profile.email %}
+                        <a href="mailto:{{ profile.email }}" style="font-weight: bold; color: var(--text-black); text-decoration: none;" title="{{ profile.email }}">
+                            {{ profile.email.split('@')[0] }}@...
+                        </a>
+                    {% else %}
+                        <span style="font-weight: bold;">-</span>
+                    {% endif %}
+                </div>
+
+                <!-- گیت‌هاب لینک‌دار -->
+                <div class="info-card" data-tilt>
+                    <span style="color: var(--text-muted); font-size: 0.85rem;">گیت‌هاب</span>
+                    {% if profile and profile.github %}
+                        <a href="{{ profile.github if profile.github.startswith('http') else 'https://' + profile.github }}" target="_blank" style="font-weight: bold; color: var(--text-black); text-decoration: none; display: flex; align-items: center; gap: 4px;">
+                            مشاهده پروفایل ↗
+                        </a>
+                    {% else %}
+                        <span style="font-weight: bold;">-</span>
+                    {% endif %}
+                </div>
+
+                <!-- لینکدین لینک‌دار -->
+                <div class="info-card" data-tilt>
+                    <span style="color: var(--text-muted); font-size: 0.85rem;">لینکدین</span>
+                    {% if profile and profile.linkedin %}
+                        <a href="{{ profile.linkedin if profile.linkedin.startswith('http') else 'https://' + profile.linkedin }}" target="_blank" style="font-weight: bold; color: var(--text-black); text-decoration: none; display: flex; align-items: center; gap: 4px;">
+                            مشاهده پروفایل ↗
+                        </a>
+                    {% else %}
+                        <span style="font-weight: bold;">-</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- پاپ‌آوری ۲: مهارت‌ها -->
+    <div class="modal-overlay" id="skills-modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal('skills-modal')">✕</button>
+            <div style="margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
+                <h2 style="font-size: 1.8rem;">مهارت‌های تخصصی</h2>
+                <p style="color: var(--text-muted); margin-top: 5px;">دانش فنی مهندسی صنایع و ابزارهای تحلیل داده</p>
+            </div>
+
+            <h3 style="margin-bottom: 15px;">مهارت‌های تخصصی</h3>
+            <div class="grid-2">
+                {% for skill in tech_skills %}
+                <div class="skill-item">
+                    <div class="skill-info">
+                        <span>{{ skill.title }}</span>
+                        <span>{{ skill.percent }}%</span>
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill" style="width: {{ skill.percent }}%;"></div></div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <h3 style="margin: 25px 0 15px 0;">ابزارها و نرم‌افزارها</h3>
+            <div class="skills-circle-grid">
+                {% for skill in tool_skills %}
+                <div class="circle-card" data-tilt>
+                    <div class="circle-chart">
+                        <svg>
+                            <circle class="circle-bg" cx="40" cy="40" r="35"></circle>
+                            <circle class="circle-progress" cx="40" cy="40" r="35" data-percent="{{ skill.percent }}"></circle>
+                        </svg>
+                        <span class="circle-percentage">{{ skill.percent }}%</span>
+                    </div>
+                    <span class="circle-title">{{ skill.title }}</span>
+                </div>
+                {% endfor %}
+            </div>
+
+            <h3 style="margin: 25px 0 15px 0;">مهارت‌های نرم</h3>
+            <div class="grid-3">
+                {% for skill in soft_skills %}
+                <div class="info-card" data-tilt>
+                    <span style="color: var(--text-muted); font-size: 0.85rem;">{{ skill.title }}</span>
+                    <span style="font-weight: bold;">عالی</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- پاپ‌آوری ۳: سوابق تحصیلی (با اضافه شدن نام دانشگاه صنعتی شریف) -->
+    <div class="modal-overlay" id="grades-modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal('grades-modal')">✕</button>
+            <div style="margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
+                <h2 style="font-size: 1.8rem;">سوابق تحصیلی و کارنامه</h2>
+                <p style="color: var(--text-muted); margin-top: 5px;">دانشگاه صنعتی شریف • مقطع کارشناسی مهندسی صنایع</p>
+            </div>
+
+            <!-- کارت ثابت معدل کل و دانشگاه -->
+            <div style="margin-bottom: 20px;">
+                <div class="gpa-card-static" style="display: flex; flex-direction: row; justify-content: space-around; align-items: center; text-align: right;">
+                    <div class="circle-chart" style="width: 90px; height: 90px;">
+                        <svg style="width: 90px; height: 90px;">
+                            <circle class="circle-bg" cx="45" cy="45" r="38" stroke-width="7"></circle>
+                            <circle class="circle-progress" cx="45" cy="45" r="38" stroke-width="7" data-percent="92"></circle>
+                        </svg>
+                        <span class="circle-percentage" style="font-size: 1.1rem;">18.4</span>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 1.3rem;">دانشگاه صنعتی شریف</h3>
+                        <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 4px;">مهندسی صنایع • رتبه ممتاز گروه آموزشی (۶۳ واحد گذرانده شده)</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- جستجوی لایو دروس -->
+            <div class="filter-container">
+                <input type="text" id="courseSearch" placeholder="🔍 جستجوی نام درس..." class="search-input" onkeyup="filterCourses()">
+            </div>
+
+            <h3 style="margin-bottom: 15px;">نمرات دروس تخصصی</h3>
+            <div class="grid-2" id="coursesGrid">
+                {% for course in courses %}
+                <div class="course-card course-item {% if course.grade >= 18 %}excellent{% endif %}" data-title="{{ course.title }}" data-tilt>
+                    <div>
+                        <h4 style="font-size: 0.95rem;" class="course-name">{{ course.title }}</h4>
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">{{ course.term }} • {{ course.unit }} واحد</span>
+                    </div>
+                    <div style="font-size: 1.3rem; font-weight: 900;">{{ course.grade }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <!-- کدهای اسکریپت یکپارچه -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // ۱. حذف Preloader
+            setTimeout(() => {
+                const preloader = document.getElementById('preloader');
+                if (preloader) {
+                    preloader.style.opacity = '0';
+                    preloader.style.visibility = 'hidden';
+                }
+            }, 700);
+
+            // ۲. سیستم تغییر تم
+            const themeToggleBtn = document.getElementById('themeToggle');
+            const htmlTag = document.documentElement;
+
+            themeToggleBtn.addEventListener('click', () => {
+                const currentTheme = htmlTag.getAttribute('data-theme');
+                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                htmlTag.setAttribute('data-theme', newTheme);
+                themeToggleBtn.textContent = newTheme === 'light' ? '🌙' : '☀️';
+            });
+
+            // ۳. مدیریت باز/بستن پاپ‌آوری‌ها
+            window.openModal = function(id) {
+                const modal = document.getElementById(id);
+                if (modal) {
+                    modal.classList.add('active');
+                    if (id === 'skills-modal' || id === 'grades-modal') {
+                        animateCircles();
+                    }
+                }
+            };
+
+            window.closeModal = function(id) {
+                const modal = document.getElementById(id);
+                if (modal) modal.classList.remove('active');
+            };
+
+            window.addEventListener('click', (e) => {
+                if (e.target.classList.contains('modal-overlay')) {
+                    e.target.classList.remove('active');
+                }
+            });
+
+            // ۴. کلیدهای میانبر کیبورد
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    const activeModal = document.querySelector('.modal-overlay.active');
+                    if (activeModal) activeModal.classList.remove('active');
+                } else if (e.key === '1') {
+                    openModal('about-modal');
+                } else if (e.key === '2') {
+                    openModal('skills-modal');
+                } else if (e.key === '3') {
+                    openModal('grades-modal');
+                }
+            });
+
+            // ۵. هاله نوری دنباله‌رو موس
+            const spotlight = document.getElementById('spotlight');
+            window.addEventListener('mousemove', (e) => {
+                spotlight.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
+            });
+
+            // ۶. انیمیشن تایپینگ
+            const words = ["Industrial Engineer", "Data Analyst"];
+            let wordIndex = 0, charIndex = 0, isDeleting = false;
+            const targetElement = document.getElementById('typewriter');
+
+            function typeEffect() {
+                if (!targetElement) return;
+                const currentWord = words[wordIndex];
+                if (isDeleting) charIndex--; else charIndex++;
+
+                targetElement.innerHTML = currentWord.substring(0, charIndex) + '<span class="typing-cursor"></span>';
+                let typeSpeed = isDeleting ? 40 : 80;
+
+                if (!isDeleting && charIndex === currentWord.length) {
+                    typeSpeed = 2000; isDeleting = true;
+                } else if (isDeleting && charIndex === 1) {
+                    isDeleting = false;
+                    wordIndex = (wordIndex + 1) % words.length;
+                    typeSpeed = 400;
+                }
+                setTimeout(typeEffect, typeSpeed);
+            }
+            typeEffect();
+
+            // ۷. انیمیشن دایره‌ها
+            function animateCircles() {
+                const circles = document.querySelectorAll('.circle-progress');
+                circles.forEach(circle => {
+                    const percent = parseFloat(circle.getAttribute('data-percent')) || 0;
+                    const radius = circle.getAttribute('r') || 35;
+                    const circumference = 2 * Math.PI * radius;
+                    const offset = circumference - (percent / 100) * circumference;
+                    circle.style.strokeDasharray = `${circumference}`;
+                    circle.style.strokeDashoffset = `${offset}`;
+                });
+            }
+
+            // ۸. کارت‌های ۳ بعدی (بدون اعمال روی کارت معدل)
+            const tiltCards = document.querySelectorAll('[data-tilt]');
+            tiltCards.forEach(card => {
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left - rect.width / 2;
+                    const y = e.clientY - rect.top - rect.height / 2;
+                    card.style.transform = `perspective(1000px) rotateX(${-y / 12}deg) rotateY(${x / 12}deg) translateY(-4px)`;
+                });
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0)';
+                });
+            });
+
+            // ۹. Canvas پس‌زمینه
+            const canvas = document.getElementById('bgCanvas');
+            const ctx = canvas.getContext('2d');
+            let particles = [];
+
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    this.vx = (Math.random() - 0.5) * 0.6;
+                    this.vy = (Math.random() - 0.5) * 0.6;
+                    this.radius = 2;
+                }
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                    if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+                }
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--canvas-node');
+                    ctx.fill();
+                }
+            }
+
+            for (let i = 0; i < 45; i++) particles.push(new Particle());
+
+            function animateCanvas() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                const strokeColor = getComputedStyle(document.documentElement).getPropertyValue('--canvas-line');
+
+                for (let i = 0; i < particles.length; i++) {
+                    particles[i].update();
+                    particles[i].draw();
+
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const dx = particles[i].x - particles[j].x;
+                        const dy = particles[i].y - particles[j].y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+
+                        if (dist < 120) {
+                            ctx.beginPath();
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(particles[j].x, particles[j].y);
+                            ctx.strokeStyle = strokeColor;
+                            ctx.lineWidth = 0.8;
+                            ctx.stroke();
+                        }
+                    }
+                }
+                requestAnimationFrame(animateCanvas);
+            }
+            animateCanvas();
+        });
+
+        // ۱۰. فیلتر زنده دروس
+        function filterCourses() {
+            const query = document.getElementById('courseSearch').value.toLowerCase();
+            const items = document.querySelectorAll('.course-item');
+
+            items.forEach(item => {
+                const title = item.getAttribute('data-title').toLowerCase();
+                if (title.includes(query)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

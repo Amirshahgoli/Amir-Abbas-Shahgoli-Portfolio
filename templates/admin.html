@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>پنل مدیریت | CMS اختصاصی</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body { overflow-y: auto; height: auto; display: block; }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <h1>پنل مدیریت پورتفولیو (CMS)</h1>
+            <a href="/" style="color: var(--text-muted); text-decoration: none;">← مشاهده وب‌سایت</a>
+        </div>
+
+        <!-- بخش ۱: مدیریت پروفایل -->
+        <div class="admin-section">
+            <h2>اطلاعات شخصی و بیوگرافی</h2>
+            <form action="/admin/profile" method="POST" class="admin-form">
+                <div class="form-group">
+                    <label>نام کامل</label>
+                    <input type="text" name="full_name" class="form-control" value="{{ profile.full_name if profile else '' }}">
+                </div>
+                <div class="form-group">
+                    <label>عنوان شغلی</label>
+                    <input type="text" name="title" class="form-control" value="{{ profile.title if profile else '' }}">
+                </div>
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label>متن درباره من (بیوگرافی)</label>
+                    <textarea name="bio" class="form-control" rows="3">{{ profile.bio if profile else '' }}</textarea>
+                </div>
+                <div class="form-group">
+                    <label>ایمیل</label>
+                    <input type="text" name="email" class="form-control" value="{{ profile.email if profile else '' }}">
+                </div>
+                <div class="form-group">
+                    <label>گیت‌هاب</label>
+                    <input type="text" name="github" class="form-control" value="{{ profile.github if profile else '' }}">
+                </div>
+                <div class="form-group">
+                    <label>لینکدین</label>
+                    <input type="text" name="linkedin" class="form-control" value="{{ profile.linkedin if profile else '' }}">
+                </div>
+                <button type="submit" class="btn-submit" style="grid-column: 1 / -1; width: max-content;">ذخیره تغییرات پروفایل</button>
+            </form>
+        </div>
+
+        <!-- بخش ۲: مدیریت مهارت‌ها -->
+        <div class="admin-section">
+            <h2>افزودن مهارت جدید</h2>
+            <form action="/admin/skill/add" method="POST" class="admin-form">
+                <div class="form-group">
+                    <label>عنوان مهارت</label>
+                    <input type="text" name="title" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>درصد تسلط (۰ تا ۱۰۰)</label>
+                    <input type="number" name="percent" class="form-control" min="0" max="100">
+                </div>
+                <div class="form-group">
+                    <label>دسته‌بندی</label>
+                    <select name="category" class="form-control">
+                        <option value="technical">مهارت تخصصی</option>
+                        <option value="tool">ابزار / نرم‌افزار</option>
+                        <option value="soft">مهارت نرم</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-submit" style="height: 40px; align-self: flex-end;">+ افزودن مهارت</button>
+            </form>
+
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>عنوان</th>
+                        <th>درصد</th>
+                        <th>دسته</th>
+                        <th>عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for skill in skills %}
+                    <tr>
+                        <td>{{ skill.title }}</td>
+                        <td>{{ skill.percent }}%</td>
+                        <td>{{ skill.category }}</td>
+                        <td><a href="/admin/skill/delete/{{ skill.id }}" class="btn-danger">حذف</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- بخش ۳: مدیریت نمره‌ها -->
+        <div class="admin-section">
+            <h2>افزودن نمره / درس جدید</h2>
+            <form action="/admin/course/add" method="POST" class="admin-form">
+                <div class="form-group">
+                    <label>نام درس</label>
+                    <input type="text" name="title" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>نمره</label>
+                    <input type="number" step="0.1" name="grade" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>تعداد واحد</label>
+                    <input type="number" name="unit" class="form-control" value="3" required>
+                </div>
+                <div class="form-group">
+                    <label>ترم تحصیلی</label>
+                    <input type="text" name="term" class="form-control" placeholder="مثلاً ترم ۴">
+                </div>
+                <button type="submit" class="btn-submit" style="height: 40px; align-self: flex-end;">+ افزودن درس</button>
+            </form>
+
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>عنوان درس</th>
+                        <th>نمره</th>
+                        <th>واحد</th>
+                        <th>ترم</th>
+                        <th>عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for course in courses %}
+                    <tr>
+                        <td>{{ course.title }}</td>
+                        <td>{{ course.grade }}</td>
+                        <td>{{ course.unit }}</td>
+                        <td>{{ course.term }}</td>
+                        <td><a href="/admin/course/delete/{{ course.id }}" class="btn-danger">حذف</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+</body>
+</html>
