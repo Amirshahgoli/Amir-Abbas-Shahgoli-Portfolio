@@ -2,9 +2,15 @@ from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
+from whitenoise import WhiteNoise
 
 app = Flask(__name__)
 
+app = Flask(__name__)
+
+# پشتیبانی از فایل‌های استاتیک و CSS روی Render
+app.wsgi_app = WhiteNoise(app.wsgi_app, root='static/')
+app.wsgi_app.add_files('static/', prefix='static/')
 # کلید امنیتی برای مدیریت نشست‌ها (Session) - در محیط واقعی رمز پیچیده‌تری بگذارید
 app.config['SECRET_KEY'] = 'your-secret-key-change-this-in-production'
 
