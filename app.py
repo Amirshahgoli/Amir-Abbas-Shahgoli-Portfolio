@@ -8,11 +8,7 @@ app = Flask(__name__)
 
 app = Flask(__name__)
 
-# پشتیبانی از فایل‌های استاتیک و CSS روی Render
-app.wsgi_app = WhiteNoise(app.wsgi_app, root='static/')
-app.wsgi_app.add_files('static/', prefix='static/')
-# کلید امنیتی برای مدیریت نشست‌ها (Session) - در محیط واقعی رمز پیچیده‌تری بگذارید
-app.config['SECRET_KEY'] = 'your-secret-key-change-this-in-production'
+app.wsgi_app = WhiteNoise(app.wsgi_app, root='static', prefix='static/')
 
 # تنظیمات دیتابیس SQLite
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
